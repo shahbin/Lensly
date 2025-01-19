@@ -85,7 +85,7 @@ const loadShopPage = async (req,res)=>{
         res.status(500).send('Server Error')
     }
 }
-
+// to remove
 // const loadMyAccount = async (req,res)=>{
 //     try{
 //         return res.render('account')
