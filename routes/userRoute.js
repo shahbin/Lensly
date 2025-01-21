@@ -3,6 +3,7 @@ const router = express.Router()
 const passport = require("passport")
 const userController = require("../controllers/user/userController")
 const productController = require("../controllers/user/productController")
+const profileController = require("../controllers/user/profileController") 
 const {userAuth,adminAuth, checkUser} = require("../middlewares/auth")
 
 
@@ -30,6 +31,9 @@ router.post('/login',userController.login)
 router.get("/logout",userController.logout)
 router.get('/shop',userController.loadShopPage)
 router.get('/productDetails',productController.productDetails)
+router.get('/userProfile',userAuth,profileController.userProfile)
+router.post('/editProfile',userAuth, profileController.editProfile)
+router.post('/changePassword', userAuth, profileController.changePassword);
 // router.get('/account', userController.loadMyAccount)
 // router.get('/compare',userController.loadCompare)
 
