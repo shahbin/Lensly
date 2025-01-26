@@ -4,6 +4,7 @@ const Product = require("../../models/productSchema")
 const env = require("dotenv").config();
 const nodemailer = require("nodemailer")
 const bcrypt = require("bcrypt")
+// const shopController = require("./shopController");
 
 const loadHomePage = async (req,res)=>{
     try{
@@ -39,73 +40,149 @@ const pageNotFound = async (req,res) => {
     }
 }
 
+const loadShopPage = async (req, res) => {
+  const selectedCategory = req.query.category ? req.query.category.split(',') : [];
+  const selectedSort = req.query.sort || '';
+  const minPrice = req.query.minPrice || 0;
+  const maxPrice = req.query.maxPrice || 500000;
 
+  try {
+    const userId = req.session.user;
+    const page = parseInt(req.query.page) || 1;
+    let limit = 8;
+    const skip = (page - 1) * limit;
 
-const loadShopPage = async (req,res)=>{
-    try{
-       const userId = req.session.user
-       const page = parseInt(req.query.page) || 1
-       const limit = 8
-       const skip = (page - 1) * limit
+    let query = {
+      isBlocked: false,
+      salePrice: { $gte: parseInt(minPrice), $lte: parseInt(maxPrice) }
+    };
 
-       const categories = await Category.find({isListed:true})
-
-        const totalProducts = await Product.countDocuments({
-            isBlocked:false,
-            category: {$in : categories.map(cat => cat._id)}
-        })
-
-        const totalPages = Math.ceil(totalProducts / limit)
-
-        const product = await Product.find({isBlocked:false, category:{$in : categories.map(cat => cat._id)}})
-        .populate('category')
-        .sort({_id : -1})
-        .skip(skip)
-        .limit(limit)
-
-        const pagination = {
-            currentPage : page,
-            totalPages : totalPages,
-            hNextPage : page < totalPages,
-            hPrevPage : page > 1,
-            nextPage : page + 1,
-            prevPage : page - 1
-        }
-
-        if(userId){
-            const userData = await User.findById({_id:userId})
-            
-            return res.render("shop",{user:userData, products:product, pagination:pagination})
-        }else{
-            return res.render('shop',{products:product, pagination: pagination})
-        }
+    if (selectedCategory.length > 0) {
+      const categories = await Category.find({ name: { $in: selectedCategory } });
+      query.category = { $in: categories.map(cat => cat._id) };
     }
-    catch(error){
-        console.log('Shop page not loading',error);
-        res.status(500).send('Server Error')
+
+    let sort = {};
+    if (selectedSort) {
+      if (selectedSort === 'priceLowToHigh') {
+        sort.salePrice = 1;
+      } else if (selectedSort === 'priceHighToLow') {
+        sort.salePrice = -1;
+      } else if (selectedSort === 'popularity') {
+        sort.orders = -1; // Assuming 'orders' field tracks the number of orders
+        limit = 6; // Limit to 6 products
+      } else if (selectedSort === 'featured') {
+        const categories = await Category.find({});
+        const featuredProducts = [];
+        for (const category of categories) {
+          const product = await Product.findOne({ category: category._id, isBlocked: false })
+            .sort({ orders: -1 })
+            .exec();
+          if (product) {
+            featuredProducts.push(product);
+          }
+        }
+        return res.render('shop', {
+          user: userId ? await User.findById(userId) : null,
+          products: featuredProducts,
+          pagination: { currentPage: 1, totalPages: 1, hasNextPage: false, hasPrevPage: false },
+          selectedCategory,
+          selectedSort,
+          minPrice,
+          maxPrice,
+          categoryQuantities: await getCategoryQuantities(),
+          totalProducts: featuredProducts.length
+        });
+      } else if (selectedSort === 'newArrivals') {
+        sort.createdOn = -1;
+        limit = 4; // Limit to 4 products
+      } else if (selectedSort === 'aToZ') {
+        sort.productName = 1;
+      } else if (selectedSort === 'zToA') {
+        sort.productName = -1;
+      }
     }
+
+    const totalProducts = await Product.countDocuments(query);
+
+    const product = await Product.find(query)
+      .populate('category')
+      .collation({ locale: 'en', strength: 2 }) // Case-sensitive collation
+      .sort(sort)
+      .skip(skip)
+      .limit(limit);
+
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    const categoryQuantities = await Product.aggregate([
+      { $match: { isBlocked: false } },
+      { $group: { _id: "$category", totalQuantity: { $sum: "$quantity" } } }
+    ]);
+
+    const categoryQuantitiesMap = {};
+    for (const item of categoryQuantities) {
+      const category = await Category.findById(item._id);
+      if (category) {
+        categoryQuantitiesMap[category.name] = item.totalQuantity;
+      }
+    }
+
+    const pagination = {
+      currentPage: page,
+      totalPages: totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      nextPage: page + 1,
+      prevPage: page - 1,
+    };
+
+    if (userId) {
+      const userData = await User.findById({ _id: userId });
+
+      return res.render("shop", {
+        user: userData,
+        products: product,
+        pagination: pagination,
+        selectedCategory,
+        selectedSort,
+        minPrice,
+        maxPrice,
+        categoryQuantities: categoryQuantitiesMap,
+        totalProducts
+      });
+    } else {
+      return res.render('shop', {
+        products: product,
+        pagination: pagination,
+        selectedCategory,
+        selectedSort,
+        minPrice,
+        maxPrice,
+        categoryQuantities: categoryQuantitiesMap,
+        totalProducts
+      });
+    }
+  } catch (error) {
+    console.log('Shop page not loading', error);
+    res.status(500).send('Server Error');
+  }
+};
+
+async function getCategoryQuantities() {
+  const categoryQuantities = await Product.aggregate([
+    { $match: { isBlocked: false } },
+    { $group: { _id: "$category", totalQuantity: { $sum: "$quantity" } } }
+  ]);
+
+  const categoryQuantitiesMap = {};
+  for (const item of categoryQuantities) {
+    const category = await Category.findById(item._id);
+    if (category) {
+      categoryQuantitiesMap[category.name] = item.totalQuantity;
+    }
+  }
+  return categoryQuantitiesMap;
 }
-// to remove
-// const loadMyAccount = async (req,res)=>{
-//     try{
-//         return res.render('account')
-//     }
-//     catch(error){
-//         console.log('My account page not loading');
-//         res.status(500).send('Server Error')
-//     }
-// }
-
-// const loadCompare = async (req,res)=>{
-//     try{
-//         return res.render('compare')
-//     }
-//     catch(error){
-//         console.log('Compare page not loading');
-//         res.status(500).send('Server Error')
-//     }
-// }
-
 
 const loadSignup = async (req,res)=>{
     try{
@@ -317,8 +394,32 @@ const logout = async (req,res)=>{
     }
 }
 
+const searchProducts = async (req, res) => {
+    try {
+      const query = req.query.query || '';
+
+      if (query.trim() === '') {
+        return res.redirect('/');
+      }
+  
+      const products = await Product.find({
+        productName: { $regex: query, $options: 'i' },
+        isBlocked: false
+      });
+  
+      res.render('search-results', {
+        user: req.session.user,
+        products,
+        query
+      });
+    } catch (error) {
+      console.error('Error searching products:', error);
+      res.redirect('/pageNotFound');
+    }
+  };
 
 
+  
 
 module.exports = {
     loadHomePage,
@@ -330,5 +431,6 @@ module.exports = {
     resendOtp,
     loadLogin,
     login,
-    logout
+    logout,
+    searchProducts
 }

@@ -244,6 +244,7 @@ table {
 .nav__list {
   column-gap: 2.5rem;
   margin-right: auto;
+  font-size: larger;
 }
 
 .nav__link {
@@ -1427,6 +1428,7 @@ table {
 /*=============== CART ===============*/
 .table__container {
   overflow-x: auto;
+  
 }
 
 .table {

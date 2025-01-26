@@ -219,7 +219,6 @@
         </div>
         <div class="address-actions">
           <button class="edit-btn" onclick="editAddress('${address._id}')">Edit</button>
-          <button class="delete-btn" onclick="confirmDeleteAddress('${address._id}')">Delete</button>
         </div>
       </div>
     `).join('');
@@ -480,22 +479,7 @@
 
 
 
-  async function deleteAddress(addressId) {
-    try {
-      const response = await fetch(`/addresses/${addressId}`, { method: 'DELETE' });
-      if (response.ok) {
-        addresses = addresses.filter(addr => addr._id !== addressId);
-        renderAddresses();
-        showNotification('Address deleted successfully!', 'success');
-      } else {
-        showNotification('Failed to delete address', 'error');
-      }
-    } catch (error) {
-      console.error('Error deleting address:', error);
-      showNotification('Failed to delete address', 'error');
-    }
-  }
-
+  
   function showNotification(message, type = 'success') {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;

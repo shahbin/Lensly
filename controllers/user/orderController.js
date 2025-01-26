@@ -16,7 +16,7 @@ const getOrderDetails = async (req, res) => {
         user: req.session.user 
       })
     }
-    
+
 
     res.render('order-details', { 
       order, 
@@ -33,6 +33,15 @@ const getOrderDetails = async (req, res) => {
     })
   }
 }
+
+
+
+
+
+
+
+
+
 
 module.exports = {
   getOrderDetails

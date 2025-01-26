@@ -2,21 +2,21 @@
 
 <main class="main">
   <!-- Breadcrumb -->
-  <section class="breadcrumb">
-    <ul class="breadcrumb__list flex ">
-      <li><a href="/" class="breadcrumb__link">Home</a></li>
-      <li><span class="breadcrumb__link">></span></li>
-      <li><a href="/shop" class="breadcrumb__link">Shop</a></li>
-      <li><span class="breadcrumb__link">></span></li>
-      <li><span class="breadcrumb__link"><%= product.productName %></span></li>
-    </ul>
-  </section>
+  <section class="breadcrumb" style="width: 100%; height: 80px; display: flex; margin-top: -40px; justify-content: center; align-items: center; background-color: #ffff;" >
+        <ul class="breadcrumb__list  container" style=" margin-left: -25px;">
+          <li><a href="/" class="breadcrumb__link" style="font-size: 12px ;">Home</a></li>
+          <li><span class="breadcrumb__link">></span></li>
+          <li><a href="/shop" class="breadcrumb__link" style="font-size: 12px ;">Shop</a></li>
+          <li><span class="breadcrumb__link">></span></li>
+          <li><a href="" class="breadcrumb__link" style="font-size: 12px ;"><%= product.productName %></a></li>
+        </ul>
+      </section>
 
   <!-- Product Details -->
   <section class="details section--lg">
-    <div class="details__container container grid">
+    <div class="details__container container grid" style="margin-top: -75px;">
       <!-- Product Images -->
-      <div class="details__group">
+      <div class="details__group" >
         <div class="product-image-zoom">
           <img
             src="/admin-assets/imgs/brands/<%= product.productImage[0] %>"
@@ -48,7 +48,7 @@
           <% if (product.regularPrice > product.salePrice) { %>
             <span class="old__price">₹<%= product.regularPrice %></span>
             <span class="save__price">
-              <%= Math.round((product.regularPrice - product.salePrice) / product.regularPrice * 100) %>% Off
+              10% Off
             </span>
           <% } %>
         </div>
@@ -272,14 +272,15 @@
 
 .new__price {
   font-size: 1.5rem;
-  font-weight: bold;
-  color: #007bff;
+  font-weight: larger;
+  color: #056512;
 }
 
 .old__price {
   text-decoration: line-through;
   color: #666;
-  margin-left: 1rem;
+  margin-left: -23rem;
+  margin-bottom: -0.75rem;
 }
 
 .save__price {

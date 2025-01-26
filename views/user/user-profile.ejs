@@ -526,13 +526,14 @@ body {
 
 
 <body>
-  <section class="breadcrumb" style="margin-bottom: 15px; margin-top: -20px;"> 
-    <ul class="breadcrumb__list flex " style="width:160px; padding-right: 31px;"> 
-      <li><a href="/" class="breadcrumb__link">Home</a></li> 
-      <li><span class="breadcrumb__link" style="padding-right: 4px;">></span></li> 
-      <li><span class="breadcrumb__link" style="padding-right: 14px;">Profile </span></li> 
-    </ul> 
-  </section>
+    <section class="breadcrumb" style="width: 100%; height: 80px; display: flex; margin-top: -40px; justify-content: center; align-items: center; background-color: #ffff;" >
+        <ul class="breadcrumb__list  container" style=" margin-left: -25px;">
+          <li><a href="/" class="breadcrumb__link" style="font-size: 12px ;">Home</a></li>
+          <li><span class="breadcrumb__link">></span></li>
+          <li><a href="/shop" class="breadcrumb__link" style="font-size: 12px ;">Profile</a></li>
+      
+        </ul>
+      </section>
   <header class="header">
     <div class="container">
         <h1 class="welcome-text" id="welcomeText">Welcome back, <%= user.name %>!</h1>

@@ -11,12 +11,11 @@
           <li><a href="/shop" class="breadcrumb__link" style="font-size: 12px ;">Shop</a></li>
           <li><span class="breadcrumb__link">></span></li>
           <li><a href="/cart" class="breadcrumb__link" style="font-size: 12px ;">Cart</a></li>
-      
         </ul>
       </section>
 
       <!--=============== CART ===============-->
-      <section class="cart section--lg container">
+      <section class="cart ">
         <% if (cartItems && cartItems.length > 0) { %>
         <div class="table__container">
           <table class="table">
@@ -69,16 +68,14 @@
           </table>
         </div>
 
-        <div class="cart__actions">
+        <div class="cart__actions" style="margin-left: -20px; margin-right: 70px; margin-top: -100px; ">
           <a href="/shop" class="btn flex btn__md">
             <i class="fi-rs-shopping-bag"></i> Continue Shopping
           </a>
         </div>
 
-        <!-- Add a gap here -->
-        <div style="margin-bottom: 20px;"></div>
 
-          <div class="cart__total">
+          <div class="cart__total" style="margin: 250px; margin-top: 40px; margin-bottom: 20px;">
             <h3 class="section__title">Cart Totals</h3>
             <table class="cart__total-table">
                 <tr>
