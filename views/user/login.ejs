@@ -1,4 +1,4 @@
-<%- include("../../views/partials/user/header") %>
+<%- include("../../views/partials/user/header", { user: user }) %>
     <!--=============== MAIN ===============-->
     <main class="main">
       <!--=============== BREADCRUMB ===============-->
@@ -45,6 +45,9 @@
                         <% } %>
                         <div class="d-flex justify-content-between align-items-center">
                             <button type="submit" class="login-btn">Log In</button>
+                            <div>
+                                <a href="/reset-password">forgot password</a>
+                              </div>
                             <div class="login-alt-options">
                                 <p>or log in with</p>
                             </div>

@@ -1,4 +1,4 @@
-<%- include("../../views/partials/user/header") %>
+<%- include("../../views/partials/user/header", { user: user }) %>
 
     <!--=============== MAIN ===============-->
     <main class="main">
@@ -18,7 +18,7 @@
             <div class="signup-form">
                 <h3 class="section__title">Create an Account</h3>
                 <form id="signForm" class="signup-form__grid" method="post" action="/signup" novalidate>
-                    <% if(locals.message && message.length > 0) { %>
+                    <% if (typeof message !== 'undefined' && message.length > 0) { %>
                         <h6 class="alert alert-danger" style="color: darkred"> <%= message %> </h6>
                     <% } %>
                     <div class="signup-field">

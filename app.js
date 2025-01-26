@@ -8,8 +8,9 @@ const passport = require("./config/passport")
 const db = require("./config/db")
 const userRoute = require("./routes/userRoute")
 const adminRoute = require("./routes/adminRoute")
+// const flash = require('connect-flash'); // Remove this line
+const { ensureAuthenticated, setUser } = require('./middleware/auth');
 db();
-
 
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
@@ -26,19 +27,20 @@ app.use(session({
 
 app.use(passport.initialize())
 app.use(passport.session())
+// app.use(flash()); // Remove this line
 
-
-app.use((re,res,next)=>{
-    res.set('cache-control','no-store')
+app.use((req, res, next) => {
+    res.set('cache-control', 'no-store')
     next()
 })
 app.set("view engine","ejs")
 app.set("views",[path.join(__dirname,'views/user'),path.join(__dirname,'views/admin')])
 app.use(express.static(path.join(__dirname,'public')))
 
+app.use(setUser); // Apply the setUser middleware
 app.use("/",userRoute)
 app.use("/admin",adminRoute)
-
+app.use('/user', ensureAuthenticated, userRoute);
 
 const PORT = 5000 || process.env.PORT
 app.listen(process.env.PORT, ()=>{
@@ -46,5 +48,4 @@ app.listen(process.env.PORT, ()=>{
     
 })
 
-
-module.exports = app; 
+module.exports = app;

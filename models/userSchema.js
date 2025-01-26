@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema({
         type : Boolean,
         default : false
     },
+    addresses: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Address'
+    }]
     
  })
  

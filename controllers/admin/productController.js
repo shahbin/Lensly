@@ -1,4 +1,3 @@
-
 const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const Brand = require("../../models/brandSchema");
@@ -118,54 +117,45 @@ const addProducts = async (req, res) => {
 
 
 
-const getAllProducts = async (req,res) =>{
+const getAllProducts = async (req, res) => {
     try {
-        
-        const search = req.query.search ||""
-        const page = req.query.page || 1
-        const limit = 4
+        const search = req.query.search || "";
+        const page = parseInt(req.query.page) || 1;
+        const limit = 4;
 
-        const count = await Product.find({
-            $or:[
-                {productName:{$regex:new RegExp(".*"+search+".*","i")}},
-                {brand:{$regex:new RegExp(".*"+search+".*","i")}}
-            ],
-        }).countDocuments()
+        const searchQuery = search ? {
+            $or: [
+                { productName: { $regex: new RegExp(".*" + search + ".*", "i") } },
+                { brand: { $regex: new RegExp(".*" + search + ".*", "i") } }
+            ]
+        } : {};
 
-        const totalPages = Math.ceil(count / limit)
-        const skipCount = (totalPages - page) * limit
+        const totalProducts = await Product.countDocuments(searchQuery);
+        const totalPages = Math.ceil(totalProducts / limit);
 
-        const productData = await Product.find({
-            $or:[
-                {productName:{$regex:new RegExp(".*"+search+".*","i")}},
-                {brand:{$regex:new RegExp(".*"+search+".*","i")}}
-            ],
-        }).sort({createdOn: -1})
-        .limit(limit*1).skip(skipCount)
-        .populate('category').exec()
+        const productData = await Product.find(searchQuery)
+            .sort({ _id: -1 }) 
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .populate('category')
+            .exec();
 
+        const category = await Category.find({ isListed: true });
+        const brand = await Brand.find({ isBlocked: false });
 
-        const category = await Category.find({isListed:true})
-        const brand = await Brand.find({isBlocked:false})
-
-        if(category && brand){
-            res.render("products",{
-                data:productData,
-                currentPage:page,
-                totalPages:Math.ceil(count/limit),
-                cat:category,
-                brand:brand
-            })
-        }else {
-            res.render("page-404");
-        }
-
+        res.render("products", {
+            data: productData,
+            currentPage: page,
+            totalPages: totalPages,
+            search: search,
+            cat: category,
+            brand: brand
+        });
     } catch (error) {
-
-        res.redirect('/pageError')
-        
+        console.error("Pagination error:", error);
+        res.redirect('/pageError');
     }
-}
+};
 
 
 const blockProduct = async (req,res)=>{

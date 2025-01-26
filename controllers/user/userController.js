@@ -19,7 +19,7 @@ const loadHomePage = async (req,res)=>{
             
             return res.render("home",{user:userData, products:product})
         }else{
-            return res.render('home',{products:product})
+            return res.render('home',{user: null, products:product})
         }
     }
     catch(error){
@@ -257,10 +257,12 @@ const resendOtp = async (req,res)=>{
 
 const loadLogin = async (req,res)=>{
     try{
-        if(!req.session.user){
-            return res.render('login')
-        }else {
-            res.redirect('/')
+        const user = req.session.user;
+        if (!user) {
+            return res.render('login', { user: null });
+        } else {
+            const userData = await User.findById({ _id: user });
+            return res.render('login', { user: userData });
         }
     }
     catch(error){
@@ -296,6 +298,8 @@ const login = async (req,res)=>{
         res.render("login",{message:"Please try again later"})
     }
 }
+
+
 
 
 const logout = async (req,res)=>{

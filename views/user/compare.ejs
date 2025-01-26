@@ -1,4 +1,4 @@
-<%- include("../../views/partials/user/header") %>
+<%- include("../../views/partials/user/header", { assetPath: "/admin-assets" }) %>
 
     <!--=============== MAIN ===============-->
     <main class="main">
@@ -211,9 +211,4 @@
     </main>
 
     <!--=============== FOOTER ===============-->
-    
-    <!--=============== SWIPER JS ===============-->
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-
-    <!--=============== MAIN JS ===============-->
-    <%- include("../../views/partials/user/footer") %>
+    <%- include("../../views/partials/user/footer", { assetPath: "/admin-assets" }) %>

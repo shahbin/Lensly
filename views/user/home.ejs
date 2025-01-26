@@ -1,5 +1,4 @@
-
-<%- include("../../views/partials/user/header") %>
+<%- include("../../views/partials/user/header", { user: user }) %>
 
 
     <!--=============== MAIN ===============-->
@@ -629,7 +628,7 @@
           </div>  -->
           <div class="tab__item" content id="new-added">
             <div class="products__container grid">
-              <% for(let i=0; i<products.length; i++){ %>
+              <% for(let i=products.length-1; i>=0; i--){ %>
               <div class="product__item">
                 <div class="product__banner">
                   <a href="/productDetails?id=<%= products[i]._id %>" class="product__images">
@@ -1149,7 +1148,7 @@
         <h3 class="section__title"><span>New</span> Arrivals</h3>
         <div class="new__container swiper">
           <div class="swiper-wrapper">
-            <% for(let i=4; i<products.length; i++){ %>
+            <% for(let i=4; i<products.length-3; i++){ %>
             <div class="product__item">
               <div class="product__banner">
                 <a href="/productDetails?id=<%= products[i]._id %>" class="product__images">

@@ -17,7 +17,7 @@
     />
 
     <!--=============== CSS ===============-->
-    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link rel="stylesheet" href="/css/style.css">
 
     <title>Lensly</title>
   </head>
@@ -69,27 +69,28 @@
         <div class="header__user-actions">
           <a href="wishlist.html" class="header__action-btn" title="Wishlist">
             <img src="assets/img/icon-heart.svg" alt="" />
-            <span class="count">3</span>
+            <!-- <span class="count"></span> -->
           </a>
-          <a href="cart.html" class="header__action-btn" title="Cart">
+          <a href="/cart" class="header__action-btn" title="Cart">
             <img src="assets/img/icon-cart.svg" alt="" />
-            <span class="count">3</span>
+            <% if (user) { %>
+              <span class="count"><%= typeof cartItems !== 'undefined' ? cartItems.length : 0 %></span>
+            <% } %>
           </a>
           <div class="header__container ">
-            <%if(locals.user){%>
+            <% if (user) { %>
               <div class="dropdown">
-                <a href="#" class="sign-in-link" style="margin-left: 50px;"><%=locals.user.name%></a>
+                <a href="#" class="sign-in-link" style="margin-left: 50px;"><%= user.name %></a>
                 <div class="dropdown-content">
                   <a href="/userProfile">Profile</a>
                   <a href="/logout">Logout</a>
                 </div>
               </div>
-
-              <%}else {%>
-            <a href="/login" class="header__top-action">
-              Log In  
-            </a>
-            <%}%>
+            <% } else { %>
+              <a href="/login" class="header__top-action">
+                Log In  
+              </a>
+            <% } %>
           </div>
           <div class="header__action-btn nav__toggle" id="nav-toggle">
             <img src="./assets//img/menu-burger.svg" alt="">
@@ -97,3 +98,5 @@
         </div>
       </nav>
     </header>
+  </body>
+</html>

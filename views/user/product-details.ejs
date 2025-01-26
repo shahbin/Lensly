@@ -70,11 +70,13 @@
         <div class="details__action">
           <div class="quantity-wrapper">
             <button class="qty-btn" onclick="updateQuantity('decrease')">-</button>
-            <input type="number" min="1" max="<%= product.quantity %>" value="1" id="quantity" class="quantity" />
-            <button class="qty-btn" onclick="updateQuantity('increase')">+</button>
+            <input type="number" min="1" max="<%= Math.min(product.quantity, 5) %>" value="1" id="quantity" class="quantity" />
+            <button class="qty-btn" onclick="updateQuantity('increase')" id="increase-btn">+</button>
           </div>
+          <div id="max-quantity-message" style="display: none; color: red; font-size: 12px;">Maximum quantity reached</div>
+          <div id="out-of-stock-message" style="display: none; color: red; font-size: 12px;">Out of stock</div>
           
-          <a href="/add-to-cart/<%= product._id %>" class="btn btn--sm" onclick="addToCart(event)">
+          <a href="#" class="btn btn--sm" onclick="handleAddToCart('<%= product._id %>')">
             Add To Cart
           </a>
           
@@ -289,73 +291,123 @@
 }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-function changeImage(element) {
-  const mainImg = document.getElementById('main-img');
-  mainImg.src = element.src;
-  
-  // Remove active class from all thumbnails
-  document.querySelectorAll('.details__small-img').forEach(img => {
-    img.classList.remove('active');
-  });
-  
-  // Add active class to clicked thumbnail
-  element.classList.add('active');
+  // Cart management functions
+const cartAPI = {
+  async addToCart(productId, quantity = 1) {
+    try {
+      const response = await fetch('/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ productId, quantity })
+      });
+      
+      if (!response.ok) throw new Error('Failed to add to cart');
+      window.location.href = '/cart';
+      
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to add product to cart');
+    }
+  },
+
+  async updateQuantity(productId, quantity) {
+    try {
+      const response = await fetch('/update-cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ productId, quantity })
+      });
+
+      if (!response.ok) throw new Error('Update failed');
+      location.reload();
+      
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to update quantity');
+    }
+  },
+
+  async removeItem(productId) {
+    try {
+      const response = await fetch(`/removeFrom-cart/${productId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Remove failed');
+      location.reload();
+      
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to remove item');
+    }
+  }
+};
+
+function handleAddToCart(productId) {
+  const quantity = document.getElementById('quantity')?.value || 1;
+  cartAPI.addToCart(productId, parseInt(quantity));
 }
 
-// Initialize first image as active
-document.addEventListener('DOMContentLoaded', () => {
-  const firstThumbnail = document.querySelector('.details__small-img');
-  if(firstThumbnail) {
-    firstThumbnail.classList.add('active');
+function handleQuantityUpdate(input, productId) {
+  const quantity = parseInt(input.value);
+  if (quantity < 1) {
+    input.value = 1;
+    return;
   }
-});
+  cartAPI.updateQuantity(productId, quantity);
+}
 
-// Mouse move zoom effect
-const zoomContainer = document.querySelector('.product-image-zoom');
-const zoomImage = zoomContainer.querySelector('img');
+function handleRemoveItem(productId) {
+  if (!confirm('Remove this item?')) return;
+  cartAPI.removeItem(productId);
+}
 
-zoomContainer.addEventListener('mousemove', (e) => {
-  const { left, top, width, height } = zoomContainer.getBoundingClientRect();
-  const x = (e.clientX - left) / width;
-  const y = (e.clientY - top) / height;
-  
-  zoomImage.style.transformOrigin = `${x * 100}% ${y * 100}%`;
-});
-
-// Quantity handling
 function updateQuantity(action) {
-  const input = document.getElementById('quantity');
-  const currentValue = parseInt(input.value);
-  const maxQuantity = parseInt(input.max);
-  
-  if (action === 'increase' && currentValue < maxQuantity) {
-    input.value = currentValue + 1;
-  } else if (action === 'decrease' && currentValue > 1) {
-    input.value = currentValue - 1;
+  const quantityInput = document.getElementById('quantity');
+  let quantity = parseInt(quantityInput.value);
+  const maxQuantity = parseInt(quantityInput.max);
+  const availableStock = parseInt('<%= product.quantity %>');
+
+  if (action === 'increase' && quantity < maxQuantity) {
+    quantity++;
+  } else if (action === 'decrease' && quantity > 1) {
+    quantity--;
+  }
+
+  quantityInput.value = quantity;
+  toggleIncreaseButton(quantity, maxQuantity, availableStock);
+}
+
+function toggleIncreaseButton(quantity, maxQuantity, availableStock) {
+  const increaseBtn = document.getElementById('increase-btn');
+  const outOfStockMessage = document.getElementById('out-of-stock-message');
+
+  if (quantity >= maxQuantity) {
+    increaseBtn.disabled = true;
+    Swal.fire({
+      icon: 'warning',
+      title: 'Maximum quantity reached',
+      text: 'You cannot add more than the allowed limit.',
+      timer: 2000,
+      showConfirmButton: false
+    });
+  } else if (quantity >= availableStock) {
+    increaseBtn.disabled = true;
+    outOfStockMessage.style.display = 'block';
+  } else {
+    increaseBtn.disabled = false;
+    outOfStockMessage.style.display = 'none';
   }
 }
 
-// Cart handling
-function addToCart(e) {
-  e.preventDefault();
-  const quantity = document.getElementById('quantity').value;
-  const url = e.target.href + `?quantity=${quantity}`;
-  window.location.href = url;
-}
-
-// Tab handling
-document.querySelectorAll('.detail__tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    const target = tab.dataset.target;
-    
-    // Remove active classes
-    document.querySelectorAll('.detail__tab').forEach(t => t.classList.remove('active-tab'));
-    document.querySelectorAll('.details__tab-content').forEach(c => c.classList.remove('active-tab'));
-    
-    // Add active class to clicked tab and content
-    tab.classList.add('active-tab');
-    document.querySelector(target).classList.add('active-tab');
-  });
+document.addEventListener('DOMContentLoaded', function() {
+  const quantityInput = document.getElementById('quantity');
+  toggleIncreaseButton(parseInt(quantityInput.value), parseInt(quantityInput.max), parseInt('<%= product.quantity %>'));
 });
 </script>
